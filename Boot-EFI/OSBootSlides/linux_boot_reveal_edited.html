@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Загрузка ОС и EFI</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.css" id="theme">
+  <style>
+    :root {
+      --accent: #2358a5;
+      --accent-2: #4f7dc2;
+      --soft: #eef4ff;
+      --line: #c9d8f0;
+      --text: #1d2430;
+      --muted: #5a6472;
+    }
+    .reveal {
+      font-size: 30px;
+      color: var(--text);
+    }
+    .reveal .slides section {
+      text-align: left;
+    }
+    .reveal h1, .reveal h2, .reveal h3 {
+      color: var(--accent);
+      text-transform: none;
+      letter-spacing: 0;
+      margin-bottom: 0.35em;
+    }
+    .reveal h1 { font-size: 1.6em; }
+    .reveal h2 { font-size: 1.28em; }
+    .reveal h3 { font-size: 0.92em; color: var(--accent-2); }
+    .reveal p, .reveal li { line-height: 1.28; }
+    .reveal ul { margin-top: 0.35em; }
+    .reveal li { margin: 0.16em 0; }
+    .cols {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: start;
+    }
+    .cols-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 20px;
+      box-shadow: 0 8px 28px rgba(35,88,165,0.08);
+    }
+    .lead {
+      font-size: 1.02em;
+      color: var(--muted);
+      margin-bottom: 0.5em;
+    }
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      color: var(--accent);
+      font-size: 0.62em;
+      margin: 0 8px 10px 0;
+    }
+    .image-slot {
+      min-height: 220px;
+      border: 2px dashed var(--accent-2);
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(79,125,194,0.07), rgba(35,88,165,0.03));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 18px;
+      color: var(--muted);
+      font-size: 0.75em;
+    }
+    .image-slot.small { min-height: 150px; }
+    .image-slot.tall { min-height: 320px; }
+    .mono {
+      font-family: "Cascadia Code", "JetBrains Mono", "Consolas", monospace;
+      font-size: 0.72em;
+      background: #f7f9fc;
+      padding: 0.05em 0.3em;
+      border-radius: 6px;
+    }
+    .flow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 18px;
+      font-size: 0.66em;
+      color: var(--muted);
+    }
+    .flow span {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 12px;
+      padding: 8px 12px;
+    }
+    .flow .arrow {
+      border: none;
+      background: transparent;
+      padding: 0 2px;
+      color: var(--accent);
+      font-weight: bold;
+    }
+    .accent-box {
+      border-left: 6px solid var(--accent);
+      background: var(--soft);
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-top: 14px;
+      font-size: 0.8em;
+    }
+    .table-like {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .table-like > div {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: #fff;
+    }
+    .small { font-size: 0.76em; }
+    .tiny { font-size: 0.64em; color: var(--muted); }
+    .centered { text-align: center !important; }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <section>
+      <section>
+        <h1>Загрузка ОС и EFI</h1>
+        <p class="lead">Первая лекция курса «Практическое использование Linux»</p>
+        <div>
+          <span class="tag">Задача загрузки</span>
+          <span class="tag">Legacy BIOS</span>
+          <span class="tag">MBR</span>
+          <span class="tag">UEFI</span>
+          <span class="tag">GPT</span>
+          <span class="tag">ESP</span>
+          <span class="tag">GRUB</span>
+        </div>
+        <div class="accent-box">
+          Цель лекции: познакомиться с тем, как работает загрузка ОС, что такое UEFI и в чём его отличие от BIOS.
+        </div>
+      </section>
+    <!-- </section>
+
+    <section> -->
+      <section>
+        <h2>Загрузка ОС как задача</h2>
+        <div class="cols">
+          <div class="card">
+            <ul>
+              <li>Начальная инициализация аппаратуры</li>
+              <li>Запуск кода из энергонезависимой памяти на плате</li>
+              <li>Поиск доступных вариантов загрузки</li>
+              <li>Выбор источника загрузки</li>
+              <li>Загрузка следующего компонента</li>
+              <li>Передача параметров запуска</li>
+            </ul>
+          </div>
+          <div>
+            <div class="image-slot tall">
+              <img src="boot_scheme.png" style="width: auto; height: 320px;"><br>
+            </div>
+          </div>
+        </div>
+      <!-- </section>
+
+      <section> -->
+        <h2>Прошивка платформы и её роль</h2>
+        <div class="table-like">
+          <div>
+            <h3>Свойства</h3>
+            <ul class="small">
+              <li>Находится вне обычной файловой системы ОС</li>
+              <li>Доступна сразу после включения</li>
+              <li>Готовит базовую среду для запуска ОС</li>
+            </ul>
+          <!-- </div>
+          <div> -->
+            <h3 style="margin-top:0.7em;">Задачи</h3>
+            <ul class="small">
+              <li>Минимальная инициализация аппаратуры</li>
+              <li>Поиск источников загрузки</li>
+              <li>Запуск встроенного менеджера загрузки</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section>
+      <section>
+        <h2>BIOS</h2>
+          <div class="card">
+            <h3>Legacy BIOS</h3>
+            <ul class="small">
+              <li>Историческая модель загрузки IBM</li>
+              <li>Прошивка выбирает устройство, читает первый сектор и передаёт ему управление</li>
+              <li>Зависимость от архитектуры и исторических соглашений</li>
+            </ul>
+          </div>
+        <h2>MBR</h2>
+          <div class="card">
+            <ul class="small">
+              <li><a href=https://habr.com/ru/articles/347002/#:~:text=Структура%20MBR>Структура MBR</a></li>
+              <li>Первый сектор диска: начальный код + таблица разделов</li>
+              <li>Четыре записи фиксированного формата</li>
+              <li>Сигнатура корректного загрузочного сектора в конце</li>
+              <li>Extended/logical partitions — обход ограничения формата</li>
+            </ul>
+          </div>
+      </section>
+    </section>
+
+    <section>
+      <section>
+        <h2>UEFI — современная модель загрузки</h2>
+        <div class="table-like">
+          <div>
+            <h3>Цели</h3>
+            <ul class="small">
+              <li>Избавиться от жёсткой архитектурной зависимости</li>
+              <li>Улучшить масштабируемость legacy-схемы</li>
+              <li>Устранить legacy формата «сектор + прыжок по адресу»</li>
+            </ul>
+          </div>
+          <div>
+            <h3 style="margin-top:0.7em;">Итог</h3>
+            <ul class="small">
+              <li>Формализованная предзагрузочная среда</li>
+              <li>Стандартные сервисы и протоколы</li>
+              <li>Запуск EFI-приложений как файлов</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Предзагрузочная среда UEFI</h2>
+        <div class="cols">
+          <div class="card">
+            <ul>
+              <li>Менеджер загрузки</li>
+              <li>Переменные NVRAM</li>
+              <li>Работа с разделами и файловыми системами</li>
+              <li>Device paths</li>
+              <li>Стандартный способ запуска EFI-приложений</li>
+            </ul>
+          </div>
+        </div>
+      <!-- </section>
+
+      <section> -->
+        <h2>UEFI Boot Manager и boot variables</h2>
+        <div class="cols">
+          <div class="card">
+            <h3>Общая идея</h3>
+            <ul class="small">
+              <li>Загрузка задаётся не только содержимым диска</li>
+              <li>Часть конфигурации хранится в NVRAM прошивки</li>
+            </ul>
+            <h3 style="margin-top: 0.8em;">Boot variables</h3>
+            <ul class="small">
+              <li><span class="mono">Boot####</span> — отдельные варианты загрузки</li>
+              <li><span class="mono">BootOrder</span> — порядок перебора</li>
+              <li><span class="mono">BootNext</span> — одноразовый выбор</li>
+              <li><span class="mono">BootCurrent</span> — текущая запись</li>
+              <li><span class="mono">Timeout</span> — время ожидания</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section>
+      <section>
+        <h2>GPT — GUID Partition Table</h2>
+        <div class="cols">
+          <div class="card">
+            <h3>Проблемы Master Boot Record</h3>
+            <ul class="small">
+              <li>Плохая масштабируемость</li>
+              <li>Ограниченное количество записей о разделах</li>
+              <li>Слабая защита от повреждений</li>
+              <li>Ограничения по размеру диска</li>
+            </ul>
+            <h3 style="margin-top:0.7em;">Особенности</h3>
+            <ul class="small">
+              <li>GUID как идентификаторы</li>
+              <li>Структурированные записи о разделах</li>
+              <li>Дополнительная система контроля целостности записей</li>
+              <li>Поддержка работы с, вообще говоря, <b>любыми</b> объектами</li>
+            </ul>
+          </div>
+          <div>
+            <div class="image-slot tall">
+              <img src="GUID_Partition_Table_Scheme.png"><br>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- <section>
+        <h2>Структура GPT на диске</h2>
+        <div class="card">
+          <ul>
+            <li>Protective MBR</li>
+            <li>Primary GPT Header</li>
+            <li>Массив записей о разделах</li>
+            <li>Данные самих разделов</li>
+            <li>Резервная копия массива записей</li>
+            <li>Backup GPT Header</li>
+          </ul>
+        </div>
+        <div class="table-like" style="margin-top:24px;">
+          <div>
+            <h3>Защита</h3>
+            <p class="small">Protective MBR нужен для старых программ, которые не понимают GPT.</p>
+          </div>
+          <div>
+            <h3>Надёжность</h3>
+            <p class="small">Есть и основной, и резервный заголовки, а также копии массива записей.</p>
+          </div>
+        </div>
+      </section> -->
+
+      <section>
+        <h2>Структура записи GPT</h2>
+        <div class="cols">
+          <div class="card">
+            <ul>
+              <li><a href=https://habr.com/ru/articles/347002/#:~:text=Структура%20GPT>Структура GPT</a></li>
+              <li>Тип раздела</li>
+              <li>Уникальный идентификатор раздела</li>
+              <li>Начальный адрес</li>
+              <li>Конечный адрес</li>
+              <li>Атрибуты</li>
+              <li>Имя раздела</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>EFI System Partition</h2>
+        <div class="cols">
+          <div class="card">
+            <ul class="small">
+              <li>Специальный раздел, из которого UEFI запускает EFI-образы</li>
+              <li>Единая точка размещения файлов загрузки</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Структура</h3>
+            <ul class="small">
+              <li>Файловая система FAT (FAT32)</li>
+              <li>Каталоги <span class="mono">EFI/...</span></li>
+              <li>Файлы загрузчиков</li>
+              <ul class="small">
+                <li>Ядро Linux с EFI stub</li>
+              </ul>
+            </ul>
+          </div>
+          <div class="image-slot tall">
+            <div class="image-slot tall">
+              <img src="Fat32_structure.png" style="height: 320px;"><br>
+            </div>
+          </div>
+        </div>
+        <div class="accent-box">
+          GPT описывает, что раздел <b>существует</b>.<br>
+          ESP — это конкретный раздел с файлами.<br>
+          Запись <span class="mono">Boot####</span> указывает, какой файл на нём запускать.
+        </div>
+      </section>
+
+      <section>
+        <h2>GRUB</h2>
+        <div class="cols">
+          <div class="card">
+            <h3>Зачем нужен</h3>
+            <ul class="small">
+              <li>Выбрать ядро</li>
+              <li>Передать параметры</li>
+              <li>Загрузить initramfs</li>
+              <li>Поддержать разные сценарии загрузки</li>
+            </ul>
+            <h3 style="margin-top:0.8em;">Почему удобен</h3>
+            <ul class="small">
+              <li>Работает и с legacy BIOS, и с UEFI</li>
+              <li>Удобен для нескольких ОС</li>
+              <li>Даёт понятное меню выбора</li>
+            </ul>
+          </div>
+          <div>
+            <div class="card">
+              <h3>Конфигурирование</h3>
+              <ul class="small">
+                <li><span class="mono">/etc/default/grub</span> — общие параметры</li>
+                <li><span class="mono">/etc/grub.d/</span> — сценарии генерации</li>
+                <li><span class="mono">grub.cfg</span> — итоговая сгенерированная конфигурация</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Можно ли обойтись без GRUB?</h2>
+        <div class="cols">
+          <div class="card">
+            <ul>
+              <li>Да, в UEFI возможен прямой запуск ядра Linux</li>
+              <ul class="small">
+                <li><span class="mono">EFI stub</span> позволяет ядру выглядеть как EFI-исполняемый образ</li>
+                <li>Ядро размещается на ESP</li>
+                <li>В NVRAM добавляется запись <span class="mono">Boot####</span></li>
+              </ul>
+            </ul>
+          </div>
+          <div>
+            <div class="table-like" style="grid-template-columns: 1fr; gap: 12px;">
+              <div>
+                <h3>Плюсы</h3>
+                <p class="small">Цепочка короче, меньше промежуточных звеньев.</p>
+              </div>
+              <div>
+                <h3>Минусы</h3>
+                <p class="small">Меньше гибкости для управления несколькими ядрами и сложными сценариями загрузки.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    controls: true,
+    progress: true,
+    center: false,
+    transition: 'slide',
+    navigationMode: 'default',
+    slideNumber: 'c/t',
+    width: 1600,
+    height: 900,
+    margin: 0.06
+  });
+</script>
+</body>
+</html>
