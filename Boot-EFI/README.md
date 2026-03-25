@@ -4,8 +4,9 @@
 
  + [PDF-версия](./Загрузка_ОС_и_EFI.pdf) презентации
  + [HTML-версия](./OSBootSlides/linux_boot_reveal_edited.html) презентации
-	 + TODO
- + Текстовая версия лекции
+	 + Онлайн-просмотр доступен [по ссылке](https://usamg1t.github.io/Linux_Practic_Usage/Boot-EFI/OSBootSlides/linux_boot_reveal_edited.html)
+	 + Исходники можно скачать и локально открыть в браузере
+ + Текстовая версия лекции \[В разработке\]
 
 ## Самостоятельная работа
 
