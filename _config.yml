@@ -1,9 +1,30 @@
+markdown: kramdown
+theme: jekyll-theme-slate
+
 plugins:
   - jekyll-relative-links
 
 relative_links:
   enabled: true
   collections: true
+
+include:
+  - README.md
+  - Boot-EFI/README.md
+  - Boot-EFI/Загрузка ОС и EFI.md
+  - Boot-EFI/Загрузка ОС и EFI, полный текст.md
+  - Terminal-Shell/README.md
+  - Terminal-Shell/Работа в командной строке.md
+  - Terminal-Shell/Работа в командной строке, полный текст.md
+  - Process-Management/README.md
+  - Process-Management/Управление процессами.md
+  - Process-Management/Управление процессами, полный текст.md
+  - FileSystem-Mounting/README.md
+  - FileSystem-Mounting/Структура файловой системы.md
+  - FileSystem-Mounting/Структура файловой системы, полный текст.md
+  - SystemServices/README.md
+  - SystemServices/Принципы настройки сетевых служб.md
+  - SystemServices/Принципы настройки сетевых служб, полный текст.md
 
 title: Linux Practic Usage
 description: Practical materials for learning Linux
