@@ -13,7 +13,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Получить полную историю
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -27,7 +28,6 @@ jobs:
       - name: Fetch and rebase pages branch
         run: |
           git fetch origin
-          # Если ветка pages не существует, создаём её на основе текущей
           if git rev-parse --verify origin/pages > /dev/null 2>&1; then
             git checkout pages
             git rebase master
