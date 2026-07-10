@@ -3,7 +3,12 @@ name: Build and Deploy Jekyll
 on:
   push:
     branches:
-      - master  # Измените на main, если у вас main ветка
+      - master
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
