@@ -1,0 +1,34 @@
+name: Build and Deploy Jekyll
+
+on:
+  push:
+    branches:
+      - master  # Измените на main, если у вас main ветка
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Install Jekyll and plugins
+        run: |
+          gem install jekyll bundler
+          gem install jekyll-relative-links
+
+      - name: Build site
+        run: jekyll build --source . --destination ./_site
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
